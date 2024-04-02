@@ -4,16 +4,20 @@
     - role: '{{ playbook_dir }}'
       vars:
         gri_installs:
-          - repo: bradfordwagner/go-azure-blob-cli
-            binary_name: abc
-            tag: 1.2.1
+          # - repo: bradfordwagner/go-azure-blob-cli
+          #   binary_name: abc
+          #   tag: 1.2.1
+          - repo: bradfordwagner/ks
+            # binary_name: ks
+            tag: 1.10.1
   tasks:
     - name: check binaries installed
       include_tasks: ./tests/check_output.yml
       loop_control:
         loop_var: item
       loop:
-        - 'ls -lh /usr/local/bin'
-        - 'ls -lh /usr/local/go-azure-blob-cli/1.2.1'
-        - /usr/local/go-azure-blob-cli/1.2.1/abc -h
-        - /usr/local/bin/abc -h
+        - ls -lh /usr/local/bin
+        - /usr/local/bin/ks -h
+        # - ls -lh /usr/local/go-azure-blob-cli/1.2.1
+        # - /usr/local/go-azure-blob-cli/1.2.1/abc -h
+        # - /usr/local/bin/abc -h
