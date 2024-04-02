@@ -1,6 +1,6 @@
 - name: '{{ item }}'
   command: '{{ item }}'
   register: test_output
-- name: assert binary does not fail to print help
+- name: log={{ item }}
   debug:
     msg: '{{ test_output.stdout }}'
