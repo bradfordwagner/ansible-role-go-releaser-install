@@ -33,7 +33,7 @@
       - fs_tmp_tgz={{ fs_tmp_tgz }}
 
 - name: check for {{ fs_app_install_dir }}
-  # become: true
+  become: true
   stat:
     path: '{{ fs_app_install_exe }}'
   changed_when: false
@@ -57,22 +57,22 @@
       when: app_tgz in item
       with_items: "{{ checksum_content.split('\n') }}"
 
-#     # download and install
+    # download and install
     - name: download {{ app_tgz_url }}
-      # become: true
+      become: true
       get_url:
         url: '{{ app_tgz_url }}'
         dest: '{{ fs_tmp_tgz }}'
         checksum: 'sha256:{{ checksum }}'
         mode: 644
     - name: mkdir {{ fs_app_install_dir }}
-      # become: true
+      become: true
       file:
         path: '{{ fs_app_install_dir }}'
         state: directory
         mode: '755'
     - name: unarchive {{ fs_tmp_tgz }}
-      # become: true
+      become: true
       unarchive:
         remote_src: true
         src: '{{ fs_tmp_tgz }}'
@@ -81,13 +81,13 @@
   # cleanup tgz file
   always:
     - name: rm {{ fs_tmp_tgz }}
-      # become: true
-      become_user: root
+      become: true
+      # become_user: root
       file:
         path: '{{ fs_tmp_tgz }}'
         state: absent
 - name: link {{ fs_app_link }} to {{ fs_app_install_exe }}
-  # become: true
+  become: true
   file:
     src: '{{ fs_app_install_exe }}'
     dest: '{{ fs_app_link }}'
