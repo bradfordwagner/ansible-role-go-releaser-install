@@ -1,5 +1,5 @@
 galaxy_info:
-  role_name: azure_blob_cli
+  role_name: go_releaser_install
   author: Bradford Wagner
   description: installs binaries build by goreleaser
   company: Blackrock Financial Management
