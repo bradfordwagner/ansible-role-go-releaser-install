@@ -1,4 +1,5 @@
-- command: '{{ item }}'
+- name: '{{ item }}'
+  command: '{{ item }}'
   register: test_output
 - name: assert binary does not fail to print help
   debug:
