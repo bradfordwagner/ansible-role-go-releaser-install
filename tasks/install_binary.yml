@@ -78,6 +78,7 @@
         src: '{{ fs_tmp_tgz }}'
         dest: '{{ fs_app_install_dir }}'
         creates: '{{ fs_app_install_exe }}'
+        mode: '755'
   # cleanup tgz file
   always:
     - name: rm {{ fs_tmp_tgz }}
