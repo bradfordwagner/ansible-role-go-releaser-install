@@ -15,4 +15,5 @@
       loop:
         - 'ls -lh /usr/local/bin'
         - 'ls -lh /usr/local/go-azure-blob-cli/1.2.1'
+        - /usr/local/go-azure-blob-cli/1.2.1/abc -h
         - /usr/local/bin/abc -h
