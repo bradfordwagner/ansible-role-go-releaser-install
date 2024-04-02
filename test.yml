@@ -7,10 +7,11 @@
           - repo: bradfordwagner/go-azure-blob-cli
             binary_name: abc
             tag: 1.2.1
-  # tasks:
-  #   - name: check binaries installed
-  #     include_tasks: ./tests/check_output.yml
-  #     loop_control:
-  #       loop_var: item
-  #     loop:
-  #       - /usr/local/bin/abc
+  tasks:
+    - name: check binaries installed
+      include_tasks: ./tests/check_output.yml
+      loop_control:
+        loop_var: item
+      loop:
+        # - /usr/local/bin/abc
+        - 'ls -lh /usr/local/bin'
