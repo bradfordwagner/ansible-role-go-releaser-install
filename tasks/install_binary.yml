@@ -1,0 +1,97 @@
+- set_fact:
+    # https://github.com/bradfordwagner/go-azure-blob-cli/releases/download/1.2.1/go-azure-blob-cli_1.2.1_darwin_amd64.tar.gz
+    app_arch_override: '{{ app.arch_override | default({}) }}'
+    app_org: "{{ app.repo.split('/') | first }}"
+    app_repo: "{{ app.repo.split('/') | last }}"
+    app_url: '{{ gri_mirror }}/{{ app.repo }}/releases/download/{{ app.tag }}'
+
+- set_fact:
+    app_binary_name: '{{ app.binary_name | default(app_repo) }}'
+    app_arch: "{{ gri_arch_map | combine(app_arch_override, recursive=True) }}"
+    app_checksum_url: '{{ app_url }}/checksums.txt'
+    app_tgz: '{{ app_repo | lower }}_{{ app.tag | lower }}_{{ gri_platform | lower }}.tar.gz'
+    fs_app_install_dir: '{{ gri_parent_install_dir }}/{{ app_repo }}/{{ app.tag }}'
+
+- set_fact:
+    fs_app_install_exe: '{{ fs_app_install_dir }}/{{ app_binary_name }}'
+    fs_app_link: '{{ gri_link_dir }}/{{ app_binary_name }}'
+    fs_tmp_tgz: '/tmp/{{ app_tgz }}'
+    app_tgz_url: '{{ app_url }}/{{ app_tgz }}'
+
+- debug:
+    msg:
+      - app.arch={{ app_arch }}
+      - app.repo={{ app.repo }},app.tag={{ app.tag }}
+      - app_checksum_url={{ app_checksum_url }}
+      - app_org={{ app_org }}
+      - app_repo={{ app_repo }}
+      - app_tgz={{ app_tgz }}
+      - app_tgz_url={{ app_tgz_url }}
+      - app_url={{ app_url }}
+      - fs_app_install_dir={{ fs_app_install_dir }}
+      - fs_app_install_exe={{ fs_app_install_exe }}
+      - fs_tmp_tgz={{ fs_tmp_tgz }}
+
+- name: check for {{ fs_app_install_dir }}
+  become: true
+  stat:
+    path: '{{ fs_app_install_exe }}'
+  changed_when: false
+  register: app_binary
+- when: not app_binary.stat.exists
+  block:
+    - debug:
+        msg: need to install app
+    # resolve checksum
+    - name: get checksums from {{ app_checksum_url }}
+      uri:
+        url: '{{ app_checksum_url }}' # eg https://github.com/rumstead/gitops-toolkit/releases/download/v1.1.2/checksums.txt
+        return_content: yes
+      register: checksum_response
+    - name: set checksum content fact
+      set_fact:
+        checksum_content: "{{ checksum_response.content }}"
+    - name: resolve checksum
+      set_fact:
+        checksum: "{{ item.split()[0] }}"
+      when: app_tgz in item
+      with_items: "{{ checksum_content.split('\n') }}"
+
+    # download and install
+    - name: download {{ app_tgz_url }}
+      become: true
+      get_url:
+        url: '{{ app_tgz_url }}'
+        dest: '{{ fs_tmp_tgz }}'
+        checksum: 'sha256:{{ checksum }}'
+        mode: 644
+    - name: mkdir {{ fs_app_install_dir }}
+      become: true
+      file:
+        path: '{{ fs_app_install_dir }}'
+        state: directory
+        mode: '755'
+    - name: unarchive {{ fs_tmp_tgz }}
+      become: true
+      unarchive:
+        remote_src: true
+        src: '{{ fs_tmp_tgz }}'
+        dest: '{{ fs_app_install_dir }}'
+        creates: '{{ fs_app_install_exe }}'
+        mode: '755'
+  # cleanup tgz file
+  always:
+    - name: rm {{ fs_tmp_tgz }}
+      become: true
+      # become_user: root
+      file:
+        path: '{{ fs_tmp_tgz }}'
+        state: absent
+- name: link {{ fs_app_link }} to {{ fs_app_install_exe }}
+  become: true
+  file:
+    src: '{{ fs_app_install_exe }}'
+    dest: '{{ fs_app_link }}'
+    state: link
+    force: true # override existing symlink
+
