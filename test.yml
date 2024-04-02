@@ -13,6 +13,6 @@
       loop_control:
         loop_var: item
       loop:
-        # - /usr/local/bin/abc
         - 'ls -lh /usr/local/bin'
         - 'ls -lh /usr/local/go-azure-blob-cli/1.2.1'
+        - /usr/local/bin/abc -h
