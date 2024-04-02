@@ -1,8 +1,10 @@
 ---
 # defaults file go-releaser-install
 
-# { repo, tag } are the only required fields
-# ex repo=bradfordwagner/go-azure-blob-cli, tag=1.2.1
+# { repo, tag, binary_name } are the only required fields
+# repo=bradfordwagner/go-azure-blob-cli
+# tag=1.2.1
+# binary_name=testcli # does not match repo name so must override
 gri_installs: []
 
 gri_parent_install_dir: /usr/local
