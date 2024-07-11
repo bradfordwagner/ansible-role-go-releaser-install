@@ -1,26 +1,31 @@
 - set_fact:
-    app_checksum_style: '{{ app.checksum_style | default(gri_checksum_style) }}'
     app_meta: '{{ app.meta | default({}) }}' # string custom metadata for templating
     app_org: "{{ app.repo.split('/') | first | lower }}"
     app_repo: "{{ app.repo.split('/') | last | lower }}"
     app_separator: "{{ app.separator | default(gri_separator) }}"
     app_archive_extension: '{{ app.archive_extension | default(gri_archive_extension) }}'
     app_archive_key: '{{ app.archive_key | default("") }}'
+    app_checksum_key: '{{ app.checksum_key | default("") }}'
 
 - set_fact:
-    app_archive_format: '{{ gri_formats[app_archive_key] | default(gri_default_archive_format) | trim }}'
+    app_archive_format: '{{ gri_archive_formats[app_archive_key] | default(gri_default_archive_format) | trim }}'
     app_binary_name: '{{ app.binary_name | default(app_repo) }}' # binary to name to install from archive
     app_url: '{{ gri_mirror }}/{{ app.repo }}/releases/download/{{ app.tag }}'
     fs_app_install_dir: '{{ gri_parent_install_dir }}/{{ app_repo }}/{{ app.tag }}'
 
 - set_fact:
+    app_checksum_format: '{{ gri_checksum_formats[app_checksum_key] | default(gri_default_checksum_format) | trim }}' # can rely on app_archive_format to resolve checksum format
     app_tgz_url: '{{ app_url }}/{{ app_archive_format }}'
     fs_app_install_exe: '{{ fs_app_install_dir }}/{{ app_binary_name }}'
     fs_app_link: '{{ gri_link_dir }}/{{ app_binary_name }}'
     fs_tmp_tgz: '/tmp/{{ app_archive_format }}'
 
+- set_fact:
+    app_checksum_url: '{{ app_url }}/{{ app_checksum_format }}'
+
 - debug:
     msg:
+      - app_checksum_url={{ app_checksum_url }}
       - app_org={{ app_org }}
       - app_repo={{ app_repo }}
       - app_separator={{ app_separator }}
@@ -41,7 +46,21 @@
 - when: not app_binary.stat.exists
   block:
     # resolve checksum
-    - include_tasks: '{{ app_checksum_style }}.yml'
+#    - include_tasks: '{{ app_checksum_style }}.yml'
+    - name: get checksums from {{ app_checksum_url }}
+      uri:
+        # eg https://github.com/rumstead/gitops-toolkit/releases/download/v1.1.2/checksums.txt
+        url: '{{ app_checksum_url }}'
+        return_content: yes
+      register: checksum_response
+    - name: set checksum content fact
+      set_fact:
+        checksum_content: "{{ checksum_response.content }}"
+    - name: resolve checksum
+      set_fact:
+        checksum: "{{ item.split()[0] }}"
+      when: app_archive_format in item
+      with_items: "{{ checksum_content.split('\n') }}"
 
     # download and install
     - name: download {{ app_tgz_url }}

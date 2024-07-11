@@ -3,13 +3,15 @@
   roles:
     - role: '{{ playbook_dir }}'
       vars:
-        gri_formats:
+        gri_archive_formats:
           pack: |
             {{- app_repo | lower }}{{ app_separator }}{{ app.tag | lower }}{{ app_separator }}{{ gri_os | lower -}}
             {% if 'amd64' != gri_arch %}
             {{ app_separator }}{{ gri_arch | lower -}}
             {% endif %}
             .{{ app_archive_extension -}}
+        gri_checksum_formats:
+          pack: '{{ app_archive_format }}.sha256'
         gri_installs:
           - repo: bradfordwagner/go-azure-blob-cli
             binary_name: abc
@@ -20,11 +22,12 @@
           - repo: bradfordwagner/ks
             tag: 1.11.0
           - repo: buildpacks/pack
-            checksum_style: sha256
-            tag: v0.34.2
-            separator: '-'
-            archive_key: pack
             archive_extension: tgz
+            archive_key: pack
+            checksum_key: pack
+            checksum_style: sha256
+            separator: '-'
+            tag: v0.34.2
 
   tasks:
     - name: check binaries installed
@@ -32,7 +35,7 @@
       loop_control:
         loop_var: item
       loop:
-         - pack -h
          - abc -h
          - ks -h
+         - pack -h
          - testcli -h

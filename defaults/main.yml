@@ -11,9 +11,6 @@ gri_parent_install_dir: /usr/local
 gri_link_dir: /usr/local/bin
 gri_mirror: https://github.com
 
-# checksumtxt,sha256
-gri_checksum_style: checksumtxt
-
 # separator to resolve file locations
 gri_separator: _
 
@@ -23,11 +20,22 @@ gri_archive_extension: tar.gz
 # if included in gri_installs.app it will be rendered before all vars are set
 gri_archive_formats: {}
 
+# custom checksum formats to use with apps
+# if included in gri_installs.app it will be rendered before all vars are set
+gri_checksum_formats: {}
+
 # default archive format to discover archive in released assets
-# examples:
+# examples urls look at the last part of the url to determine the format:
 # https://github.com/bradfordwagner/ks/releases/download/1.11.0/ks_1.11.0_darwin_amd64.tar.gz = ks_1.11.0_darwin_amd64.tar.gz
 # https://github.com/buildpacks/pack/releases/download/v0.34.2/pack-v0.34.2-linux-arm64.tgz = pack-v0.34.2-linux-arm64.tgz
 gri_default_archive_format: '{{ app_repo | lower }}{{ app_separator }}{{ app.tag | lower }}{{ app_separator }}{{ gri_os | lower }}{{ app_separator }}{{ gri_arch | lower }}.{{ app_archive_extension }}'
+
+
+# default checksum style to use with apps
+# examples urls look at the last part of the url to determine the format:
+# https://github.com/bradfordwagner/ks/releases/download/1.11.0/checksums.txt
+# https://github.com/buildpacks/pack/releases/download/v0.34.2/pack-v0.34.2-linux-arm64.tgz.sha256
+gri_default_checksum_format: 'checksums.txt'
 
 gri_arch_map:
   x86_64: amd64
