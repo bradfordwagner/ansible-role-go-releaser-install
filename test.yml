@@ -4,20 +4,24 @@
     - role: '{{ playbook_dir }}'
       vars:
         gri_installs:
-          - repo: bradfordwagner/go-azure-blob-cli
-            binary_name: abc
-            tag: 1.3.0
-          - repo: bradfordwagner/ks
-            tag: 1.11.0
-          - repo: bradfordwagner/gh-template-go-cli
-            binary_name: testcli
-            tag: v1.6.0
+          # - repo: bradfordwagner/go-azure-blob-cli
+          #   binary_name: abc
+          #   tag: 1.3.0
+          # - repo: bradfordwagner/ks
+          #   tag: 1.11.0
+          # - repo: bradfordwagner/gh-template-go-cli
+          #   binary_name: testcli
+          #   tag: v1.6.0
+          - repo: buildpacks/pack
+            # binary_name: testcli
+            tag: v0.34.2
   tasks:
     - name: check binaries installed
       include_tasks: ./tests/check_output.yml
       loop_control:
         loop_var: item
       loop:
-        - /usr/local/bin/ks -h
-        - /usr/local/bin/testcli -h
-        - /usr/local/bin/abc -h
+        - ks -h
+        - testcli -h
+        - abc -h
+        - pack -h
