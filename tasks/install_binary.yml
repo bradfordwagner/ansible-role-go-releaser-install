@@ -39,8 +39,6 @@
   register: app_binary
 - when: not app_binary.stat.exists
   block:
-    - debug:
-        msg: need to install app
     # resolve checksum
     - name: get checksums from {{ app_checksum_url }}
       uri:
