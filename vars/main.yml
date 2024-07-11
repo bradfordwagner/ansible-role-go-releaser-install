@@ -5,6 +5,5 @@
 #  repo: github repo name
 #  tag: github tag
 
-gri_os: '{{ ansible_system }}'
+gri_os: '{{ ansible_system | lower }}'
 gri_arch: '{{ gri_arch_map[ansible_architecture] }}'
-gri_platform: '{{ gri_os }}_{{ gri_arch }}'
