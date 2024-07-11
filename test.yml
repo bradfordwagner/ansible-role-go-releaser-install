@@ -25,7 +25,6 @@
             archive_extension: tgz
             archive_key: pack
             checksum_key: pack
-            checksum_style: sha256
             separator: '-'
             tag: v0.34.2
 
