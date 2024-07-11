@@ -7,7 +7,7 @@
           pack: |
             {{- app_repo }}{{ app_separator }}{{ app.tag }}{{ app_separator }}{{ gri_os -}}
             {% if 'amd64' != gri_arch %}
-            {{ app_separator }}{{ gri_arch | lower -}}
+            {{ app_separator }}{{ gri_arch -}}
             {% endif %}
             .{{ app_archive_extension -}}
         gri_checksum_formats:
