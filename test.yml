@@ -5,7 +5,7 @@
       vars:
         gri_archive_formats:
           pack: |
-            {{- app_repo | lower }}{{ app_separator }}{{ app.tag | lower }}{{ app_separator }}{{ gri_os | lower -}}
+            {{- app_repo }}{{ app_separator }}{{ app.tag }}{{ app_separator }}{{ gri_os -}}
             {% if 'amd64' != gri_arch %}
             {{ app_separator }}{{ gri_arch | lower -}}
             {% endif %}

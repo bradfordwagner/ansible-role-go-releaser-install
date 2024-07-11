@@ -28,7 +28,7 @@ gri_checksum_formats: {}
 # examples urls look at the last part of the url to determine the format:
 # https://github.com/bradfordwagner/ks/releases/download/1.11.0/ks_1.11.0_darwin_amd64.tar.gz = ks_1.11.0_darwin_amd64.tar.gz
 # https://github.com/buildpacks/pack/releases/download/v0.34.2/pack-v0.34.2-linux-arm64.tgz = pack-v0.34.2-linux-arm64.tgz
-gri_default_archive_format: '{{ app_repo | lower }}{{ app_separator }}{{ app.tag | lower }}{{ app_separator }}{{ gri_os | lower }}{{ app_separator }}{{ gri_arch | lower }}.{{ app_archive_extension }}'
+gri_default_archive_format: '{{ app_repo }}{{ app_separator }}{{ app.tag }}{{ app_separator }}{{ gri_os }}{{ app_separator }}{{ gri_arch }}.{{ app_archive_extension }}'
 
 
 # default checksum style to use with apps

@@ -36,8 +36,6 @@
       - fs_app_install_exe={{ fs_app_install_exe }}
       - fs_tmp_tgz={{ fs_tmp_tgz }}
 
-#- meta: end_play
-
 - name: check for {{ fs_app_install_dir }}
   stat:
     path: '{{ fs_app_install_exe }}'
@@ -46,10 +44,8 @@
 - when: not app_binary.stat.exists
   block:
     # resolve checksum
-#    - include_tasks: '{{ app_checksum_style }}.yml'
     - name: get checksums from {{ app_checksum_url }}
       uri:
-        # eg https://github.com/rumstead/gitops-toolkit/releases/download/v1.1.2/checksums.txt
         url: '{{ app_checksum_url }}'
         return_content: yes
       register: checksum_response
