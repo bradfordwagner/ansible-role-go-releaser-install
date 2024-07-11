@@ -7,4 +7,3 @@
 
 gri_os: '{{ ansible_system }}'
 gri_arch: '{{ gri_arch_map[ansible_architecture] }}'
-gri_platform: '{{ gri_os }}_{{ gri_arch }}'

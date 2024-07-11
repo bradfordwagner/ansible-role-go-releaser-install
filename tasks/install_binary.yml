@@ -1,21 +1,27 @@
 - set_fact:
     # https://github.com/bradfordwagner/go-azure-blob-cli/releases/download/1.2.1/go-azure-blob-cli_1.2.1_darwin_amd64.tar.gz
     app_arch_override: '{{ app.arch_override | default({}) }}'
+    app_archive_extension: '{{ app.archive_extension | default(gri_archive_extension) }}'
+    app_checksum_style: '{{ app.checksum_style | default(gri_checksum_style) }}'
     app_org: "{{ app.repo.split('/') | first }}"
     app_repo: "{{ app.repo.split('/') | last }}"
+    app_separator: '{{ app.separator | default(gri_separator) }}'
     app_url: '{{ gri_mirror }}/{{ app.repo }}/releases/download/{{ app.tag }}'
 
 - set_fact:
-    app_binary_name: '{{ app.binary_name | default(app_repo) }}'
     app_arch: "{{ gri_arch_map | combine(app_arch_override, recursive=True) }}"
-    app_tgz: '{{ app_repo | lower }}_{{ app.tag | lower }}_{{ gri_platform | lower }}.tar.gz'
+    app_binary_name: '{{ app.binary_name | default(app_repo) }}'
     fs_app_install_dir: '{{ gri_parent_install_dir }}/{{ app_repo }}/{{ app.tag }}'
+    gri_platform: '{{ gri_os }}{{ app_separator }}{{ gri_arch }}'
 
 - set_fact:
+    app_tgz: '{{ app_repo | lower }}{{ app_separator }}{{ app.tag | lower }}{{ app_separator }}{{ gri_platform | lower }}.{{ app_archive_extension }}'
+
+- set_fact:
+    app_tgz_url: '{{ app_url }}/{{ app_tgz }}'
     fs_app_install_exe: '{{ fs_app_install_dir }}/{{ app_binary_name }}'
     fs_app_link: '{{ gri_link_dir }}/{{ app_binary_name }}'
     fs_tmp_tgz: '/tmp/{{ app_tgz }}'
-    app_tgz_url: '{{ app_url }}/{{ app_tgz }}'
 
 - debug:
     msg:
@@ -23,6 +29,7 @@
       - app.repo={{ app.repo }},app.tag={{ app.tag }}
       - app_org={{ app_org }}
       - app_repo={{ app_repo }}
+      - app_separator={{ app_separator }}
       - app_tgz={{ app_tgz }}
       - app_tgz_url={{ app_tgz_url }}
       - app_url={{ app_url }}
@@ -38,7 +45,7 @@
 - when: not app_binary.stat.exists
   block:
     # resolve checksum
-    - include_tasks: '{{ gri_checksum_style }}.yml'
+    - include_tasks: '{{ app_checksum_style }}.yml'
 
     # download and install
     - name: download {{ app_tgz_url }}
@@ -71,4 +78,3 @@
     dest: '{{ fs_app_link }}'
     state: link
     force: true # override existing symlink
-
