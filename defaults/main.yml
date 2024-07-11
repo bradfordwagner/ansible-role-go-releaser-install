@@ -11,6 +11,9 @@ gri_parent_install_dir: /usr/local
 gri_link_dir: /usr/local/bin
 gri_mirror: https://github.com
 
+# checksumtxt,sha256
+gri_checksum_style: checksumtxt
+
 gri_arch_map:
   x86_64: amd64
   aarch64: arm64
