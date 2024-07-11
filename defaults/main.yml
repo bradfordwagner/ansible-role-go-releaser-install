@@ -14,10 +14,20 @@ gri_mirror: https://github.com
 # checksumtxt,sha256
 gri_checksum_style: checksumtxt
 
-# seperator to resolve file locations
+# separator to resolve file locations
 gri_separator: _
 
 gri_archive_extension: tar.gz
+
+# custom archive formats to use with apps
+# if included in gri_installs.app it will be rendered before all vars are set
+gri_archive_formats: {}
+
+# default archive format to discover archive in released assets
+# examples:
+# https://github.com/bradfordwagner/ks/releases/download/1.11.0/ks_1.11.0_darwin_amd64.tar.gz = ks_1.11.0_darwin_amd64.tar.gz
+# https://github.com/buildpacks/pack/releases/download/v0.34.2/pack-v0.34.2-linux-arm64.tgz = pack-v0.34.2-linux-arm64.tgz
+gri_default_archive_format: '{{ app_repo | lower }}{{ app_separator }}{{ app.tag | lower }}{{ app_separator }}{{ gri_os | lower }}{{ app_separator }}{{ gri_arch | lower }}.{{ app_archive_extension }}'
 
 gri_arch_map:
   x86_64: amd64

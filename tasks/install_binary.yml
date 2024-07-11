@@ -1,41 +1,37 @@
 - set_fact:
-    # https://github.com/bradfordwagner/go-azure-blob-cli/releases/download/1.2.1/go-azure-blob-cli_1.2.1_darwin_amd64.tar.gz
-    app_arch_override: '{{ app.arch_override | default({}) }}'
-    app_archive_extension: '{{ app.archive_extension | default(gri_archive_extension) }}'
     app_checksum_style: '{{ app.checksum_style | default(gri_checksum_style) }}'
-    app_org: "{{ app.repo.split('/') | first }}"
-    app_repo: "{{ app.repo.split('/') | last }}"
-    app_separator: '{{ app.separator | default(gri_separator) }}'
+    app_meta: '{{ app.meta | default({}) }}' # string custom metadata for templating
+    app_org: "{{ app.repo.split('/') | first | lower }}"
+    app_repo: "{{ app.repo.split('/') | last | lower }}"
+    app_separator: "{{ app.separator | default(gri_separator) }}"
+    app_archive_extension: '{{ app.archive_extension | default(gri_archive_extension) }}'
+    app_archive_key: '{{ app.archive_key | default("") }}'
+
+- set_fact:
+    app_archive_format: '{{ gri_formats[app_archive_key] | default(gri_default_archive_format) | trim }}'
+    app_binary_name: '{{ app.binary_name | default(app_repo) }}' # binary to name to install from archive
     app_url: '{{ gri_mirror }}/{{ app.repo }}/releases/download/{{ app.tag }}'
-
-- set_fact:
-    app_arch: "{{ gri_arch_map | combine(app_arch_override, recursive=True) }}"
-    app_binary_name: '{{ app.binary_name | default(app_repo) }}'
     fs_app_install_dir: '{{ gri_parent_install_dir }}/{{ app_repo }}/{{ app.tag }}'
-    gri_platform: '{{ gri_os }}{{ app_separator }}{{ gri_arch }}'
 
 - set_fact:
-    app_tgz: '{{ app_repo | lower }}{{ app_separator }}{{ app.tag | lower }}{{ app_separator }}{{ gri_platform | lower }}.{{ app_archive_extension }}'
-
-- set_fact:
-    app_tgz_url: '{{ app_url }}/{{ app_tgz }}'
+    app_tgz_url: '{{ app_url }}/{{ app_archive_format }}'
     fs_app_install_exe: '{{ fs_app_install_dir }}/{{ app_binary_name }}'
     fs_app_link: '{{ gri_link_dir }}/{{ app_binary_name }}'
-    fs_tmp_tgz: '/tmp/{{ app_tgz }}'
+    fs_tmp_tgz: '/tmp/{{ app_archive_format }}'
 
 - debug:
     msg:
-      - app.arch={{ app_arch }}
-      - app.repo={{ app.repo }},app.tag={{ app.tag }}
       - app_org={{ app_org }}
       - app_repo={{ app_repo }}
       - app_separator={{ app_separator }}
-      - app_tgz={{ app_tgz }}
+      - app_tag={{ app.tag }}
       - app_tgz_url={{ app_tgz_url }}
       - app_url={{ app_url }}
       - fs_app_install_dir={{ fs_app_install_dir }}
       - fs_app_install_exe={{ fs_app_install_exe }}
       - fs_tmp_tgz={{ fs_tmp_tgz }}
+
+#- meta: end_play
 
 - name: check for {{ fs_app_install_dir }}
   stat:
