@@ -37,6 +37,11 @@ gri_default_archive_format: '{{ app_repo }}{{ app_separator }}{{ app.tag }}{{ ap
 # https://github.com/buildpacks/pack/releases/download/v0.34.2/pack-v0.34.2-linux-arm64.tgz.sha256
 gri_default_checksum_format: 'checksums.txt'
 
+gri_become_user:
+  become: False
+  user: root
+  method: sudo
+
 gri_arch_map:
   x86_64: amd64
   aarch64: arm64

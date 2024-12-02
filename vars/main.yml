@@ -7,3 +7,8 @@
 
 gri_os: '{{ ansible_system | lower }}'
 gri_arch: '{{ gri_arch_map[ansible_architecture] }}'
+
+gri_become_user_defaults:
+  become: False
+  user: root
+  method: sudo

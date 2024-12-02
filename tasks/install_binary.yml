@@ -6,6 +6,8 @@
     app_archive_extension: '{{ app.archive_extension | default(gri_archive_extension) }}'
     app_archive_key: '{{ app.archive_key | default("") }}'
     app_checksum_key: '{{ app.checksum_key | default("") }}'
+    _gri_become_user: "{{ gri_become_user_defaults | combine(gri_become_user, recursive=True) }}"
+
 
 - set_fact:
     app_archive_format: '{{ gri_archive_formats[app_archive_key] | default(gri_default_archive_format) | trim }}'
@@ -44,7 +46,7 @@
 - when: not app_binary.stat.exists
   block:
     # resolve checksum
-    - name: get checksums from {{ app_checksum_url }}
+    - name: get checksums={{ app_checksum_url }}
       uri:
         url: '{{ app_checksum_url }}'
         return_content: yes
@@ -59,18 +61,27 @@
       with_items: "{{ checksum_content.split('\n') }}"
 
     # download and install
-    - name: download {{ app_tgz_url }}
+    - name: download={{ app_tgz_url }}, dest={{ fs_tmp_tgz }}
+      become: '{{ _gri_become_user.become }}'
+      become_user: '{{ _gri_become_user.user }}'
+      become_method: '{{ _gri_become_user.method }}'
       get_url:
         url: '{{ app_tgz_url }}'
         dest: '{{ fs_tmp_tgz }}'
         checksum: 'sha256:{{ checksum }}'
         mode: 644
-    - name: mkdir {{ fs_app_install_dir }}
+    - name: mkdir={{ fs_app_install_dir }}
+      become: '{{ _gri_become_user.become }}'
+      become_user: '{{ _gri_become_user.user }}'
+      become_method: '{{ _gri_become_user.method }}'
       file:
         path: '{{ fs_app_install_dir }}'
         state: directory
         mode: '755'
-    - name: unarchive {{ fs_tmp_tgz }}
+    - name: unarchive={{ fs_tmp_tgz }}
+      become: '{{ _gri_become_user.become }}'
+      become_user: '{{ _gri_become_user.user }}'
+      become_method: '{{ _gri_become_user.method }}'
       unarchive:
         remote_src: true
         src: '{{ fs_tmp_tgz }}'
@@ -80,10 +91,16 @@
   # cleanup tgz file
   always:
     - name: rm {{ fs_tmp_tgz }}
+      become: '{{ _gri_become_user.become }}'
+      become_user: '{{ _gri_become_user.user }}'
+      become_method: '{{ _gri_become_user.method }}'
       file:
         path: '{{ fs_tmp_tgz }}'
         state: absent
 - name: link {{ fs_app_link }} to {{ fs_app_install_exe }}
+  become: '{{ _gri_become_user.become }}'
+  become_user: '{{ _gri_become_user.user }}'
+  become_method: '{{ _gri_become_user.method }}'
   file:
     src: '{{ fs_app_install_exe }}'
     dest: '{{ fs_app_link }}'
