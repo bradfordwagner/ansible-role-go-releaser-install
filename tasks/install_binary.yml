@@ -7,7 +7,7 @@
     app_archive_key: '{{ app.archive_key | default("") }}'
     app_checksum_key: '{{ app.checksum_key | default("") }}'
     _gri_become_user: "{{ gri_become_user_defaults | combine(gri_become_user, recursive=True) }}"
-
+    app_is_binary: '{{ app.is_binary | default(False) }}'
 
 - set_fact:
     app_archive_format: '{{ gri_archive_formats[app_archive_key] | default(gri_default_archive_format) | trim }}'
@@ -28,6 +28,7 @@
 - debug:
     msg:
       - app_checksum_url={{ app_checksum_url }}
+      - app_is_binary={{ app_is_binary }}
       - app_org={{ app_org }}
       - app_repo={{ app_repo }}
       - app_separator={{ app_separator }}
@@ -45,22 +46,29 @@
   register: app_binary
 - when: not app_binary.stat.exists
   block:
-    # resolve checksum
-    - name: get checksums={{ app_checksum_url }}
-      uri:
-        url: '{{ app_checksum_url }}'
-        return_content: yes
-      register: checksum_response
-    - name: set checksum content fact
+    - when: not app_is_binary
+      name: resolve checksum
+      block:
+      # resolve checksum
+      - name: get checksums={{ app_checksum_url }}
+        uri:
+          url: '{{ app_checksum_url }}'
+          return_content: yes
+        register: checksum_response
+      - name: set checksum content fact
+        set_fact:
+          checksum_content: "{{ checksum_response.content }}"
+      - name: resolve checksum
+        set_fact:
+          checksum: "sha256:{{ item.split()[0] }}"
+        when: app_archive_format in item
+        with_items: "{{ checksum_content.split('\n') }}"
+    - when: app_is_binary
+      name: checksum_mode=binary
       set_fact:
-        checksum_content: "{{ checksum_response.content }}"
-    - name: resolve checksum
-      set_fact:
-        checksum: "{{ item.split()[0] }}"
-      when: app_archive_format in item
-      with_items: "{{ checksum_content.split('\n') }}"
+        checksum: ''
 
-    # download and install
+#     # download and install
     - name: download={{ app_tgz_url }}, dest={{ fs_tmp_tgz }}
       become: '{{ _gri_become_user.become }}'
       become_user: '{{ _gri_become_user.user }}'
@@ -68,7 +76,7 @@
       get_url:
         url: '{{ app_tgz_url }}'
         dest: '{{ fs_tmp_tgz }}'
-        checksum: 'sha256:{{ checksum }}'
+        checksum: '{{ checksum }}'
         mode: 644
     - name: mkdir={{ fs_app_install_dir }}
       become: '{{ _gri_become_user.become }}'
@@ -79,6 +87,7 @@
         state: directory
         mode: '755'
     - name: unarchive={{ fs_tmp_tgz }}
+      when: not app_is_binary
       become: '{{ _gri_become_user.become }}'
       become_user: '{{ _gri_become_user.user }}'
       become_method: '{{ _gri_become_user.method }}'
@@ -88,15 +97,26 @@
         dest: '{{ fs_app_install_dir }}'
         creates: '{{ fs_app_install_exe }}'
         mode: '755'
-  # cleanup tgz file
-  always:
-    - name: rm {{ fs_tmp_tgz }}
+    - name: copy={{ fs_tmp_tgz }}, dest={{ fs_app_install_exe }}
+      when: app_is_binary
       become: '{{ _gri_become_user.become }}'
       become_user: '{{ _gri_become_user.user }}'
       become_method: '{{ _gri_become_user.method }}'
-      file:
-        path: '{{ fs_tmp_tgz }}'
-        state: absent
+      copy:
+        src: '{{ fs_tmp_tgz }}'
+        dest: '{{ fs_app_install_exe }}'
+        mode: '755'
+
+  # cleanup tgz file
+  # always:
+  #   - name: rm {{ fs_tmp_tgz }}
+  #     when: not app_is_binary
+  #     become: '{{ _gri_become_user.become }}'
+  #     become_user: '{{ _gri_become_user.user }}'
+  #     become_method: '{{ _gri_become_user.method }}'
+  #     file:
+  #       path: '{{ fs_tmp_tgz }}'
+  #       state: absent
 - name: link {{ fs_app_link }} to {{ fs_app_install_exe }}
   become: '{{ _gri_become_user.become }}'
   become_user: '{{ _gri_become_user.user }}'

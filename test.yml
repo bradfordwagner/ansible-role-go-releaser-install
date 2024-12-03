@@ -27,6 +27,12 @@
             checksum_key: pack
             separator: '-'
             tag: v0.34.2
+          # see: https://github.com/FiloSottile/mkcert/releases
+          - repo: FiloSottile/mkcert
+            tag: v1.4.4
+            separator: '-'
+            archive_extension: ''
+            is_binary: True
 
   tasks:
     - name: check binaries installed
@@ -38,3 +44,4 @@
          - ks -h
          - pack -h
          - testcli -h
+         - mkcert --version
