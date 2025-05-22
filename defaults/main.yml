@@ -30,6 +30,7 @@ gri_checksum_formats: {}
 # https://github.com/buildpacks/pack/releases/download/v0.34.2/pack-v0.34.2-linux-arm64.tgz = pack-v0.34.2-linux-arm64.tgz
 gri_default_archive_format: '{{ app_repo }}{{ app_separator }}{{ app.tag }}{{ app_separator }}{{ gri_os }}{{ app_separator }}{{ gri_arch }}{{ app_archive_extension }}'
 
+gri_default_unarchive_format: 'unarchive' # default unarchive format options=unarchive|gzip|binary
 
 # default checksum style to use with apps
 # examples urls look at the last part of the url to determine the format:

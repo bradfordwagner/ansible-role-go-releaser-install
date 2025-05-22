@@ -10,8 +10,12 @@
             {{ app_separator }}{{ gri_arch -}}
             {% endif %}
             .{{ app_archive_extension -}}
+          argo_workflows: argo-{{ gri_os }}-{{ gri_arch }}.gz
         gri_checksum_formats:
           pack: '{{ app_archive_format }}.sha256'
+          argo_workflows: 'argo-workflows-cli-checksums.txt'
+        gri_unarchive_binary_formats:
+          argo_workflows: 'argo-{{ gri_os }}-{{ gri_arch }}'
         gri_installs:
           - repo: bradfordwagner/go-azure-blob-cli
             binary_name: abc
@@ -32,7 +36,16 @@
             tag: v1.4.4
             separator: '-'
             archive_extension: ''
-            is_binary: True
+            unarchive_format: binary
+          # https://github.com/argoproj/argo-workflows/releases
+          - repo: argoproj/argo-workflows
+            separator: '-'
+            archive_key: argo_workflows
+            checksum_key: argo_workflows
+            unarchive_format: gzip
+            unarchive_binary_key: argo_workflows
+            binary_name: argo
+            tag: v3.6.7
 
   tasks:
     - name: check binaries installed
@@ -45,3 +58,4 @@
          - pack -h
          - testcli -h
          - mkcert --version
+         - argo -h

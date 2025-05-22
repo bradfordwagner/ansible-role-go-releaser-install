@@ -1,3 +1,5 @@
+# fatal: [localhost]: FAILED! => {"msg": "The task includes an option with an undefined variable.. 'dict object' has no attribute 'unarchive_format'\n\nThe error appears to be in '/src/tasks/install_binary.yml': line 1, column 3, but may\nbe elsewhere in the file depending on the exact syntax problem.\n\nThe offending line appears to be:\n\n\n- set_fact:\n  ^ here\n"}
+#
 - set_fact:
     app_meta: '{{ app.meta | default({}) }}' # string custom metadata for templating
     app_org: "{{ app.repo.split('/') | first | lower }}"
@@ -7,13 +9,14 @@
     app_archive_key: '{{ app.archive_key | default("") }}'
     app_checksum_key: '{{ app.checksum_key | default("") }}'
     _gri_become_user: "{{ gri_become_user_defaults | combine(gri_become_user, recursive=True) }}"
-    app_is_binary: '{{ app.is_binary | default(False) }}'
+    app_unarchive_binary_key: '{{ app.unarchive_binary_key | default("") }}'
 
 - set_fact:
     app_archive_format: '{{ gri_archive_formats[app_archive_key] | default(gri_default_archive_format) | trim }}'
     app_binary_name: '{{ app.binary_name | default(app_repo) }}' # binary to name to install from archive
     app_url: '{{ gri_mirror }}/{{ app.repo }}/releases/download/{{ app.tag }}'
     fs_app_install_dir: '{{ gri_parent_install_dir }}/{{ app_repo }}/{{ app.tag }}'
+    app_unarchive_format: '{{ app.unarchive_format | default(gri_default_unarchive_format) }}' # default unarchive format options=unarchive|gzip
 
 - set_fact:
     app_checksum_format: '{{ gri_checksum_formats[app_checksum_key] | default(gri_default_checksum_format) | trim }}' # can rely on app_archive_format to resolve checksum format
@@ -21,6 +24,7 @@
     fs_app_install_exe: '{{ fs_app_install_dir }}/{{ app_binary_name }}'
     fs_app_link: '{{ gri_link_dir }}/{{ app_binary_name }}'
     fs_tmp_tgz: '/tmp/{{ app_archive_format }}'
+    app_is_binary: '{{ app_unarchive_format == "binary" }}'
 
 - set_fact:
     app_checksum_url: '{{ app_url }}/{{ app_checksum_format }}'
@@ -34,6 +38,7 @@
       - app_separator={{ app_separator }}
       - app_tag={{ app.tag }}
       - app_tgz_url={{ app_tgz_url }}
+      - app_unarchive_format={{ app_unarchive_format }}
       - app_url={{ app_url }}
       - fs_app_install_dir={{ fs_app_install_dir }}
       - fs_app_install_exe={{ fs_app_install_exe }}
@@ -68,7 +73,7 @@
       set_fact:
         checksum: ''
 
-#     # download and install
+    # download and install
     - name: download={{ app_tgz_url }}, dest={{ fs_tmp_tgz }}
       become: '{{ _gri_become_user.become }}'
       become_user: '{{ _gri_become_user.user }}'
@@ -77,7 +82,7 @@
         url: '{{ app_tgz_url }}'
         dest: '{{ fs_tmp_tgz }}'
         checksum: '{{ checksum }}'
-        mode: 644
+        mode: 0644 # 0 to unset any sticky bits (argo for example)
     - name: mkdir={{ fs_app_install_dir }}
       become: '{{ _gri_become_user.become }}'
       become_user: '{{ _gri_become_user.user }}'
@@ -86,8 +91,10 @@
         path: '{{ fs_app_install_dir }}'
         state: directory
         mode: '755'
+
+    # unarchive
     - name: unarchive={{ fs_tmp_tgz }}
-      when: not app_is_binary
+      when: app_unarchive_format == "unarchive"
       become: '{{ _gri_become_user.become }}'
       become_user: '{{ _gri_become_user.user }}'
       become_method: '{{ _gri_become_user.method }}'
@@ -96,6 +103,21 @@
         src: '{{ fs_tmp_tgz }}'
         dest: '{{ fs_app_install_dir }}'
         creates: '{{ fs_app_install_exe }}'
+        mode: '755'
+    - name: gzip={{ fs_tmp_tgz }}
+      when: app_unarchive_format == "gzip"
+      ansible.builtin.command: gunzip -d -N {{ fs_tmp_tgz }}
+      become: '{{ _gri_become_user.become }}'
+      become_user: '{{ _gri_become_user.user }}'
+      become_method: '{{ _gri_become_user.method }}'
+    - name: copy=/tmp/{{ gri_unarchive_binary_formats[app_unarchive_binary_key] }}, dest={{ fs_app_install_exe }}
+      when: app_unarchive_format == "gzip"
+      become: '{{ _gri_become_user.become }}'
+      become_user: '{{ _gri_become_user.user }}'
+      become_method: '{{ _gri_become_user.method }}'
+      copy:
+        src: '/tmp/{{ gri_unarchive_binary_formats[app_unarchive_binary_key] }}'
+        dest: '{{ fs_app_install_exe }}'
         mode: '755'
     - name: copy={{ fs_tmp_tgz }}, dest={{ fs_app_install_exe }}
       when: app_is_binary
@@ -108,15 +130,15 @@
         mode: '755'
 
   # cleanup tgz file
-  # always:
-  #   - name: rm {{ fs_tmp_tgz }}
-  #     when: not app_is_binary
-  #     become: '{{ _gri_become_user.become }}'
-  #     become_user: '{{ _gri_become_user.user }}'
-  #     become_method: '{{ _gri_become_user.method }}'
-  #     file:
-  #       path: '{{ fs_tmp_tgz }}'
-  #       state: absent
+  always:
+    - name: rm {{ fs_tmp_tgz }}
+      when: not app_is_binary
+      become: '{{ _gri_become_user.become }}'
+      become_user: '{{ _gri_become_user.user }}'
+      become_method: '{{ _gri_become_user.method }}'
+      file:
+        path: '{{ fs_tmp_tgz }}'
+        state: absent
 - name: link {{ fs_app_link }} to {{ fs_app_install_exe }}
   become: '{{ _gri_become_user.become }}'
   become_user: '{{ _gri_become_user.user }}'
