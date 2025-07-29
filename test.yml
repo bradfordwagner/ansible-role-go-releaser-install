@@ -57,7 +57,6 @@
             checksum_resolve_type: single
             tag: v0.3.0
 
-
   tasks:
     - name: check binaries installed
       include_tasks: ./tests/check_output.yml
