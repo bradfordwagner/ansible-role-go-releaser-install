@@ -18,37 +18,36 @@
         gri_unarchive_binary_formats:
           argo_workflows: 'argo-{{ gri_os }}-{{ gri_arch }}'
         gri_installs:
-          # - repo: bradfordwagner/go-azure-blob-cli
-          #   binary_name: abc
-          #   tag: 1.3.0
-          # - repo: bradfordwagner/gh-template-go-cli
-          #   binary_name: testcli
-          #   tag: v1.6.0
-          # - repo: bradfordwagner/ks
-          #   tag: 1.11.0
-          # - repo: buildpacks/pack
-          #   archive_extension: tgz
-          #   archive_key: pack
-          #   checksum_key: pack
-          #   separator: '-'
-          #   tag: v0.34.2
-          # # see: https://github.com/FiloSottile/mkcert/releases
-          # - repo: FiloSottile/mkcert
-          #   tag: v1.4.4
-          #   separator: '-'
-          #   archive_extension: ''
-          #   unarchive_format: binary
-          # # https://github.com/argoproj/argo-workflows/releases
-          # - repo: argoproj/argo-workflows
-          #   separator: '-'
-          #   archive_key: argo_workflows
-          #   checksum_key: argo_workflows
-          #   unarchive_format: gzip
-          #   unarchive_binary_key: argo_workflows
-          #   binary_name: argo
-          #   tag: v3.6.7
+          - repo: bradfordwagner/go-azure-blob-cli
+            binary_name: abc
+            tag: 1.3.0
+          - repo: bradfordwagner/gh-template-go-cli
+            binary_name: testcli
+            tag: v1.6.0
+          - repo: bradfordwagner/ks
+            tag: 1.11.0
+          - repo: buildpacks/pack
+            archive_extension: tgz
+            archive_key: pack
+            checksum_key: pack
+            separator: '-'
+            tag: v0.34.2
+          # see: https://github.com/FiloSottile/mkcert/releases
+          - repo: FiloSottile/mkcert
+            tag: v1.4.4
+            separator: '-'
+            archive_extension: ''
+            unarchive_format: binary
+          # https://github.com/argoproj/argo-workflows/releases
+          - repo: argoproj/argo-workflows
+            separator: '-'
+            archive_key: argo_workflows
+            checksum_key: argo_workflows
+            unarchive_format: gzip
+            unarchive_binary_key: argo_workflows
+            binary_name: argo
+            tag: v3.6.7
           # https://github.com/JFryy/qq/releases/
-          # checksum file does not designate sha256
           - repo: JFryy/qq
             archive_extension: .tar.gz
             unarchive_format: unarchive
@@ -65,10 +64,10 @@
       loop_control:
         loop_var: item
       loop:
-         # - abc -h
-         # - ks -h
-         # - pack -h
-         # - testcli -h
-         # - mkcert --version
-         # - argo -h
+         - abc -h
+         - ks -h
+         - pack -h
+         - testcli -h
+         - mkcert --version
+         - argo -h
          - qq -h
