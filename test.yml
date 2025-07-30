@@ -14,6 +14,7 @@
         gri_checksum_formats:
           pack: '{{ app_archive_format }}.sha256'
           argo_workflows: 'argo-workflows-cli-checksums.txt'
+          qq: '{{ app_archive_format }}.md5'
         gri_unarchive_binary_formats:
           argo_workflows: 'argo-{{ gri_os }}-{{ gri_arch }}'
         gri_installs:
@@ -46,6 +47,16 @@
             unarchive_binary_key: argo_workflows
             binary_name: argo
             tag: v3.6.7
+          # https://github.com/JFryy/qq/releases/
+          # does not run on arch or linux amd64
+          - repo: JFryy/qq
+            archive_extension: .tar.gz
+            unarchive_format: unarchive
+            checksum_key: qq
+            separator: '-'
+            checksum_algo: md5
+            checksum_resolve_type: single
+            tag: v0.3.0
 
   tasks:
     - name: check binaries installed
@@ -59,3 +70,4 @@
          - testcli -h
          - mkcert --version
          - argo -h
+         - ls -lh /usr/local/bin/qq

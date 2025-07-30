@@ -32,6 +32,24 @@ gri_default_archive_format: '{{ app_repo }}{{ app_separator }}{{ app.tag }}{{ ap
 
 gri_default_unarchive_format: 'unarchive' # default unarchive format options=unarchive|gzip|binary
 
+gri_default_checksum_algo: 'sha256' 
+
+# options=multi|single
+# multi example: (they require a match usually on the archive)
+  # pack:
+    # 27bdf0d2f2f0ad4212f0f2277fa3a4970d86d5848ad3deb5bc658281de2b6b26  pack-v0.38.2-linux-arm64.tgz
+  # https://github.com/bradfordwagner/ks/releases/download/2.9.0/checksums.txt:
+    # cdcea1e50fcfeb7bf7fbfcb1ab66e8b5d815036c187bd82133fd0fc4d4e8c17d  ks_2.9.0_darwin_amd64.tar.gz
+    # 96325fce59722341e0d2e28ec7990f019b6dd80be01aef29d6918dad61b44478  ks_2.9.0_darwin_arm64.tar.gz
+    # 569bff5fabd951a74d5eec868bbaa424cf6e84d126c98f27591eaca5829a6579  ks_2.9.0_linux_amd64.tar.gz
+    # eeef79c68377d80cc76c8e6484fdc5395b5c89523ee47efc431dc9c601065dd6  ks_2.9.0_linux_arm64.tar.gz
+    # 7d732f210fc9be5443263152efecff4028d907d7a15a23d40d99d578a00f7113  ks_2.9.0_windows_amd64.zip
+    # 7343f08ded08afd94fe51ff42122a9554e77d2cf86e1feafa7639a704c7f7a7f  ks_2.9.0_windows_arm64.zip
+# single example: (usually just raw input)
+  # https://github.com/JFryy/qq/releases/download/v0.3.0/qq-v0.3.0-linux-amd64.tar.gz.md5
+    # 43d9930bacedf351edc007fe889d135c
+gri_default_checksum_resolve_type: 'multi'
+
 # default checksum style to use with apps
 # examples urls look at the last part of the url to determine the format:
 # https://github.com/bradfordwagner/ks/releases/download/1.11.0/checksums.txt

@@ -16,7 +16,7 @@
     app_binary_name: '{{ app.binary_name | default(app_repo) }}' # binary to name to install from archive
     app_url: '{{ gri_mirror }}/{{ app.repo }}/releases/download/{{ app.tag }}'
     fs_app_install_dir: '{{ gri_parent_install_dir }}/{{ app_repo }}/{{ app.tag }}'
-    app_unarchive_format: '{{ app.unarchive_format | default(gri_default_unarchive_format) }}' # default unarchive format options=unarchive|gzip
+    app_unarchive_format: '{{ app.unarchive_format | default(gri_default_unarchive_format) }}' # default unarchive format options=unarchive|gzip|binary
 
 - set_fact:
     app_checksum_format: '{{ gri_checksum_formats[app_checksum_key] | default(gri_default_checksum_format) | trim }}' # can rely on app_archive_format to resolve checksum format
@@ -25,6 +25,8 @@
     fs_app_link: '{{ gri_link_dir }}/{{ app_binary_name }}'
     fs_tmp_tgz: '/tmp/{{ app_archive_format }}'
     app_is_binary: '{{ app_unarchive_format == "binary" }}'
+    app_checksum_algo: '{{ app.checksum_algo | default(gri_default_checksum_algo) }}'
+    app_checksum_resolve_type: '{{ app.checksum_resolve_type | default(gri_default_checksum_resolve_type) }}'
 
 - set_fact:
     app_checksum_url: '{{ app_url }}/{{ app_checksum_format }}'
@@ -43,6 +45,8 @@
       - fs_app_install_dir={{ fs_app_install_dir }}
       - fs_app_install_exe={{ fs_app_install_exe }}
       - fs_tmp_tgz={{ fs_tmp_tgz }}
+      - app_checksum_algo={{ app_checksum_algo }}
+      - app_checksum_resolve_type={{ app_checksum_resolve_type }}
 
 - name: check for {{ fs_app_install_dir }}
   stat:
@@ -63,11 +67,17 @@
       - name: set checksum content fact
         set_fact:
           checksum_content: "{{ checksum_response.content }}"
-      - name: resolve checksum
+      - name: checksum_resolve_type=multi
         set_fact:
-          checksum: "sha256:{{ item.split()[0] }}"
-        when: app_archive_format in item
+          checksum: "{{ app_checksum_algo }}:{{ item.split()[0] }}"
+        when: app_archive_format in item and app_checksum_resolve_type == 'multi'
         with_items: "{{ checksum_content.split('\n') }}"
+        # with_items: "{{ checksum_content }}"
+      - name: checksum_resolve_type=single
+        set_fact:
+          checksum: "{{ app_checksum_algo }}:{{ item }}"
+        when: app_checksum_resolve_type == 'single'
+        with_items: "{{ checksum_content }}"
     - when: app_is_binary
       name: checksum_mode=binary
       set_fact:
