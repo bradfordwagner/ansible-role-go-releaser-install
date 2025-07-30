@@ -70,4 +70,4 @@
          - testcli -h
          - mkcert --version
          - argo -h
-         - ls -lh $(which qq)
+         - ls -lh /usr/local/bin/qq
