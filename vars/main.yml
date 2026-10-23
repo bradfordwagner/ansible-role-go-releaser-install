@@ -5,8 +5,8 @@
 #  repo: github repo name
 #  tag: github tag
 
-gri_os: '{{ ansible_system | lower }}'
-gri_arch: '{{ gri_arch_map[ansible_architecture] }}'
+gri_os: '{{ ansible_facts.system | lower }}'
+gri_arch: '{{ gri_arch_map[ansible_facts.architecture] }}'
 
 gri_become_user_defaults:
   become: False
